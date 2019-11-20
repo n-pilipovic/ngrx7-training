@@ -118,6 +118,10 @@
           }
         }
       }
-    }},
-  "defaultProject": "phones"
+    }
+  },
+  "defaultProject": "phones",
+  "cli": {
+    "defaultCollection": "@ngrx/schematics"
+  }
 }
