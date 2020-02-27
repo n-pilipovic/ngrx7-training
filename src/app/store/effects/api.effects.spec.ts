@@ -9,7 +9,9 @@ import { AppService } from '../../app.service';
 import { cold, hot } from 'jasmine-marbles';
 import { loadPhones, loadPhonesSuccess } from '../actions/phone.actions';
 import { checkoutCart, checkoutCartSuccess } from '../actions/cart.actions';
-import { debounceTime } from 'rxjs/operators';
+import { TestScheduler } from 'rxjs/testing';
+
+let testScheduler: TestScheduler;
 
 describe('ApiEffects', () => {
   let actions$: Observable<any>;
@@ -18,6 +20,9 @@ describe('ApiEffects', () => {
   let service;
 
   beforeEach(() => {
+    testScheduler = new TestScheduler((actual, expected) => {
+      expect(actual).toEqual(expected);
+    });
     TestBed.configureTestingModule({
       providers: [
         ApiEffects,
@@ -64,6 +69,21 @@ describe('ApiEffects', () => {
     const expected = cold('(abc|)', {a: 'hello', b: 'world', c: 'novica'});
 
     expect(actual).toBeObservable(expected);
+  });
+
+  // This test will actually run *synchronously*
+  it('should get all phones from API', () => {
+    testScheduler.run(({ cold, hot, expectObservable, expectSubscriptions }) => {
+      actions$ =  hot('a', {a: loadPhones()});
+      spyOn(service, 'getPhones').and.returnValue(cold('a|', {a: phones}));
+
+      expectObservable(effects.loadPhones$).toBe('a', {
+        a: {
+          type: '[Phone] Load list success',
+          phones
+        }
+      });
+    });
   });
 
 });
